@@ -3,6 +3,7 @@ import { Cart, CartProducts } from './entities/cart.entity';
 import { GetMyCartOutputDto } from './dto/getMyCart.dto';
 import { AddProductInCartInputDto } from './dto/addProductInCart.dto';
 import { ProductsService } from '../products/products.service';
+import { Product } from 'src/products/entities/product.entity';
 
 @Injectable()
 export class CartsService {
@@ -16,36 +17,54 @@ export class CartsService {
   ) {}
 
   async getMyCart(
-    sessionId: string,
+    session: string,
     userId: number,
   ): Promise<GetMyCartOutputDto> {
     const where: any = {};
     if (userId) {
       where.userId = userId;
     } else {
-      where.sessionId = sessionId;
+      where.session = session;
     }
-    const data = await this.cartsRepository.findOne(where);
-    return data?.dataValues;
+    const data = await this.cartsRepository.findOne({
+      where,
+      include: [{ model: Product, as: 'products' }],
+    });
+
+    const cartData = data?.dataValues;
+    return cartData;
   }
 
   async addProductInCart(
-    sessionId: string,
+    session: string,
     userId: number,
     input: AddProductInCartInputDto,
   ): Promise<void> {
     const product = await this.productsService.getProductById(input.productId);
     if (input.cartId) {
-        
+      const cart = await this.cartsRepository.findOne({
+        where: { id: input.cartId },
+      });
+      await this.cartsRepository.update(
+        {
+          totalItems: cart?.dataValues?.totalItems + 1,
+          totalPrice: cart?.dataValues?.totalPrice + product.price,
+        },
+        { where: { id: cart?.id } },
+      );
+      await this.cartsProductRepository.create({
+        cartId: cart?.dataValues.id,
+        productId: product.id,
+      });
     } else {
       const cart = await this.cartsRepository.create({
-        sessionId,
+        session,
         userId,
         totalItems: 1,
         totalPrice: product.price,
       });
       await this.cartsProductRepository.create({
-        cartId: cart.id,
+        cartId: cart.dataValues.id,
         productId: product.id,
       });
     }

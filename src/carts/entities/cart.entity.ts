@@ -4,6 +4,7 @@ import {
   Model,
   ForeignKey,
   BelongsTo,
+  BelongsToMany
 } from 'sequelize-typescript';
 import { Product } from 'src/products/entities/product.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -25,6 +26,9 @@ export class Cart extends Model {
 
   @BelongsTo(() => User)
   user: User;
+
+  @BelongsToMany(() => Product, () => CartProducts)
+  products: Product[];
 }
 
 @Table
