@@ -2,6 +2,8 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { SignupInputDto } from './dto/signup.dto';
 import { Crypt } from 'src/common/crypt';
+import { SigninInputDto, SigninOutputDto } from './dto/signin.dto';
+import { AuthHelper } from '../common/auth.helper';
 
 @Injectable()
 export class UsersService {
@@ -25,5 +27,36 @@ export class UsersService {
       password,
       email: input.email,
     });
+  }
+
+  async signin(input: SigninInputDto): Promise<SigninOutputDto> {
+    const data = await this.usersRepository.findOne({
+      where: { email: input.email },
+    });
+    const user: User = data?.dataValues;
+
+    if (!user) {
+      throw new BadRequestException('Invalid email or password');
+    }
+
+    const passCorrect = await Crypt.compare(input.password, user.password);
+
+    if (!passCorrect) {
+      throw new BadRequestException('Invalid email or password');
+    }
+
+    const accessToken = await this.createAccessToken(user);
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      accessToken,
+    };
+  }
+
+  async createAccessToken(user: User): Promise<string> {
+    const accessToken = await AuthHelper.createAccessToken(user.name, user.id);
+    return accessToken;
   }
 }
