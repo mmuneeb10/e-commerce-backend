@@ -4,6 +4,7 @@ import { SignupInputDto } from './dto/signup.dto';
 import { Crypt } from 'src/common/crypt';
 import { SigninInputDto, SigninOutputDto } from './dto/signin.dto';
 import { AuthHelper } from '../common/auth.helper';
+import { GetMyProfileOutputDto } from './dto/getMyProfile.dto';
 
 @Injectable()
 export class UsersService {
@@ -58,5 +59,12 @@ export class UsersService {
   async createAccessToken(user: User): Promise<string> {
     const accessToken = await AuthHelper.createAccessToken(user.name, user.id);
     return accessToken;
+  }
+
+  async getMyProfile(id: number): Promise<GetMyProfileOutputDto> {
+    const data = await this.usersRepository.findOne({
+      where: { id },
+    });
+    return data?.dataValues;
   }
 }
