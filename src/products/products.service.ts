@@ -62,6 +62,11 @@ export class ProductsService {
     return data.map((item) => item.dataValues);
   }
 
+  async getProductById(id: number): Promise<Product> {
+    const data = await this.productsRepository.findOne({ where: { id } });
+    return data?.dataValues;
+  }
+
   async onModuleInit() {
     await this.productSeed();
   }

@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { ConfigService } from '@nestjs/config';
 import { User } from '../users/entities/user.entity';
 import { Product } from 'src/products/entities/product.entity';
+import { Cart, CartProducts } from 'src/carts/entities/cart.entity';
 
 export const databaseProviders = [
   {
@@ -16,7 +17,7 @@ export const databaseProviders = [
         password: configService.get<string>('SEQUILIZE_PASSWORD'),
         database: configService.get<string>('SEQUILIZE_DATABASE'),
       });
-      sequelize.addModels([User, Product]);
+      sequelize.addModels([User, Product, Cart, CartProducts]);
       await sequelize.sync();
       return sequelize;
     },
@@ -29,5 +30,13 @@ export const databaseProviders = [
   {
     provide: 'PRODUCTS_REPOSITORY',
     useValue: Product,
+  },
+  {
+    provide: 'CARTS_REPOSITORY',
+    useValue: Cart,
+  },
+  {
+    provide: 'CART_PRODUCTS_REPOSITORY',
+    useValue: CartProducts,
   },
 ];
