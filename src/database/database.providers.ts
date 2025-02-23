@@ -20,4 +20,8 @@ export const databaseProviders = [
       return sequelize;
     },
   },
+  {
+    provide: 'USERS_REPOSITORY',
+    useValue: User,
+  },
 ];

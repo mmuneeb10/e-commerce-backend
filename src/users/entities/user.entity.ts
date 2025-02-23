@@ -6,14 +6,8 @@ export class User extends Model {
   name: string;
 
   @Column({ unique: true })
-  email: number;
-
-  @Column
-  emailVerificationCode: string;
+  email: string;
 
   @Column
   password: string;
-
-  @Column({ defaultValue: false })
-  emailVerified: boolean;
 }
